@@ -1,9 +1,9 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 export const Login = () => {
-  const [email, setEmail] = useState('');
+  const [emailOrUsername, setEmailOrUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -14,7 +14,7 @@ export const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
+    if (!emailOrUsername || !password) {
       setError('Please fill in all fields');
       return;
     }
@@ -22,10 +22,49 @@ export const Login = () => {
     setLoading(true);
     setError('');
 
-    const { error } = await signIn(email, password);
+    // Check if input is email format or username
+    const isEmail = emailOrUsername.includes('@');
     
-    if (error) {
-      setError(error.message || 'Invalid email or password');
+    if (isEmail) {
+      // Direct login with email
+      const { error } = await signIn(emailOrUsername, password);
+      
+      if (error) {
+        setError(error.message || 'Invalid email or password');
+      }
+    } else {
+      // Username login - first get email from profiles table
+      try {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('username', emailOrUsername)
+          .single();
+
+        if (profileError || !profile) {
+          setError('Username not found');
+          setLoading(false);
+          return;
+        }
+
+        // Get user email from auth.users via the profile id
+        const { data: userData, error: userError } = await supabase.auth.admin.getUserById(profile.id);
+        
+        if (userError || !userData.user?.email) {
+          setError('Unable to find account');
+          setLoading(false);
+          return;
+        }
+
+        // Now sign in with the found email
+        const { error } = await signIn(userData.user.email, password);
+        
+        if (error) {
+          setError(error.message || 'Invalid username or password');
+        }
+      } catch (err) {
+        setError('Login failed. Please try again.');
+      }
     }
     
     setLoading(false);
@@ -111,14 +150,14 @@ export const Login = () => {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-white mb-2">
-          Email Address
+          Email or Username
         </label>
         <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          type="text"
+          value={emailOrUsername}
+          onChange={(e) => setEmailOrUsername(e.target.value)}
           className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all"
-          placeholder="Enter your email"
+          placeholder="Enter your email or username"
         />
       </div>
 
