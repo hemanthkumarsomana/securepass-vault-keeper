@@ -4,10 +4,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { X } from 'lucide-react';
 
 interface ProfileModalProps {
+  isOpen: boolean;
   onClose: () => void;
 }
 
-export const ProfileModal: React.FC<ProfileModalProps> = ({ onClose }) => {
+export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
   const { user, profile, updateProfile, changePassword } = useAuth();
   const [activeTab, setActiveTab] = useState<'profile' | 'password'>('profile');
   
@@ -27,6 +28,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ onClose }) => {
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState('');
   const [passwordLoading, setPasswordLoading] = useState(false);
+
+  // Don't render modal if not open
+  if (!isOpen) return null;
 
   const validatePhoneNumber = (phone: string) => {
     if (!phone) return true; // Optional field
