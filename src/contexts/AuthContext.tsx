@@ -1,21 +1,25 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 
-interface User {
+interface Profile {
   id: string;
   username: string;
-  email?: string;
-  phoneNumber?: string;
+  phone_number?: string;
 }
 
 interface AuthContextType {
   user: User | null;
+  session: Session | null;
+  profile: Profile | null;
   loading: boolean;
-  login: (username: string, password: string) => Promise<boolean>;
-  signup: (username: string, password: string) => Promise<boolean>;
-  logout: () => void;
-  updateProfile: (email?: string, phoneNumber?: string) => Promise<boolean>;
-  changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
+  signUp: (email: string, password: string, username: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signOut: () => Promise<void>;
+  resetPassword: (email: string) => Promise<{ error: any }>;
+  updateProfile: (phone_number?: string) => Promise<{ error: any }>;
+  changePassword: (newPassword: string) => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,119 +34,118 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in
-    const storedUser = localStorage.getItem('securepass_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          // Fetch user profile
+          setTimeout(async () => {
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+            
+            setProfile(profileData);
+          }, 0);
+        } else {
+          setProfile(null);
+        }
+        
+        setLoading(false);
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (username: string, password: string): Promise<boolean> => {
-    try {
-      // Get stored users
-      const users = JSON.parse(localStorage.getItem('securepass_users') || '[]');
-      const foundUser = users.find((u: any) => u.username === username && u.password === password);
-      
-      if (foundUser) {
-        const { password: _, ...userWithoutPassword } = foundUser;
-        setUser(userWithoutPassword);
-        localStorage.setItem('securepass_user', JSON.stringify(userWithoutPassword));
-        return true;
+  const signUp = async (email: string, password: string, username: string) => {
+    const redirectUrl = `${window.location.origin}/`;
+    
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: redirectUrl,
+        data: {
+          username: username
+        }
       }
-      return false;
-    } catch (error) {
-      console.error('Login error:', error);
-      return false;
-    }
+    });
+    
+    return { error };
   };
 
-  const signup = async (username: string, password: string): Promise<boolean> => {
-    try {
-      const users = JSON.parse(localStorage.getItem('securepass_users') || '[]');
-      
-      // Check if username already exists
-      if (users.find((u: any) => u.username === username)) {
-        return false;
-      }
-
-      const newUser = {
-        id: Date.now().toString(),
-        username,
-        password,
-        email: '',
-        phoneNumber: ''
-      };
-
-      users.push(newUser);
-      localStorage.setItem('securepass_users', JSON.stringify(users));
-
-      const { password: _, ...userWithoutPassword } = newUser;
-      setUser(userWithoutPassword);
-      localStorage.setItem('securepass_user', JSON.stringify(userWithoutPassword));
-      return true;
-    } catch (error) {
-      console.error('Signup error:', error);
-      return false;
-    }
+  const signIn = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+    
+    return { error };
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('securepass_user');
+  const signOut = async () => {
+    await supabase.auth.signOut();
   };
 
-  const updateProfile = async (email?: string, phoneNumber?: string): Promise<boolean> => {
-    try {
-      if (!user) return false;
-
-      const users = JSON.parse(localStorage.getItem('securepass_users') || '[]');
-      const userIndex = users.findIndex((u: any) => u.id === user.id);
-      
-      if (userIndex !== -1) {
-        users[userIndex] = { ...users[userIndex], email: email || '', phoneNumber: phoneNumber || '' };
-        localStorage.setItem('securepass_users', JSON.stringify(users));
-
-        const updatedUser = { ...user, email: email || '', phoneNumber: phoneNumber || '' };
-        setUser(updatedUser);
-        localStorage.setItem('securepass_user', JSON.stringify(updatedUser));
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Update profile error:', error);
-      return false;
-    }
+  const resetPassword = async (email: string) => {
+    const redirectUrl = `${window.location.origin}/`;
+    
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: redirectUrl
+    });
+    
+    return { error };
   };
 
-  const changePassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
-    try {
-      if (!user) return false;
+  const updateProfile = async (phone_number?: string) => {
+    if (!user) return { error: new Error('No user logged in') };
 
-      const users = JSON.parse(localStorage.getItem('securepass_users') || '[]');
-      const userIndex = users.findIndex((u: any) => u.id === user.id);
-      
-      if (userIndex !== -1 && users[userIndex].password === currentPassword) {
-        users[userIndex].password = newPassword;
-        localStorage.setItem('securepass_users', JSON.stringify(users));
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Change password error:', error);
-      return false;
+    const { error } = await supabase
+      .from('profiles')
+      .update({ phone_number: phone_number || null })
+      .eq('id', user.id);
+
+    if (!error && profile) {
+      setProfile({ ...profile, phone_number });
     }
+
+    return { error };
+  };
+
+  const changePassword = async (newPassword: string) => {
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword
+    });
+
+    return { error };
   };
 
   const value = {
     user,
+    session,
+    profile,
     loading,
-    login,
-    signup,
-    logout,
+    signUp,
+    signIn,
+    signOut,
+    resetPassword,
     updateProfile,
     changePassword
   };

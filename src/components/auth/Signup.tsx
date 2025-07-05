@@ -4,16 +4,18 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export const Signup = () => {
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signup } = useAuth();
+  const [success, setSuccess] = useState('');
+  const { signUp } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!username || !password || !confirmPassword) {
+    if (!username || !email || !password || !confirmPassword) {
       setError('Please fill in all fields');
       return;
     }
@@ -30,11 +32,14 @@ export const Signup = () => {
 
     setLoading(true);
     setError('');
+    setSuccess('');
 
-    const success = await signup(username, password);
+    const { error } = await signUp(email, password, username);
     
-    if (!success) {
-      setError('Username already exists');
+    if (error) {
+      setError(error.message || 'Failed to create account');
+    } else {
+      setSuccess('Account created! Please check your email to confirm your account before signing in.');
     }
     
     setLoading(false);
@@ -52,6 +57,19 @@ export const Signup = () => {
           onChange={(e) => setUsername(e.target.value)}
           className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all"
           placeholder="Choose a username"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-white mb-2">
+          Email Address
+        </label>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all"
+          placeholder="Enter your email"
         />
       </div>
 
@@ -84,6 +102,12 @@ export const Signup = () => {
       {error && (
         <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
           <p className="text-red-200 text-sm">{error}</p>
+        </div>
+      )}
+
+      {success && (
+        <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-3">
+          <p className="text-green-200 text-sm">{success}</p>
         </div>
       )}
 

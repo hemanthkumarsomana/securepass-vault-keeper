@@ -5,46 +5,82 @@ import { AddPasswordModal } from '@/components/AddPasswordModal';
 import { PasswordCard } from '@/components/PasswordCard';
 import { ProfileModal } from '@/components/ProfileModal';
 import { Plus } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface Password {
   id: string;
-  websiteName: string;
-  websiteLink?: string;
+  website_name: string;
+  website_url?: string;
   username: string;
   email?: string;
-  password: string;
+  encrypted_password: string;
   purpose?: string;
-  userId: string;
+  user_id: string;
 }
 
 export const Dashboard = () => {
-  const { user, logout } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const [passwords, setPasswords] = useState<Password[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (user) {
-      const storedPasswords = JSON.parse(localStorage.getItem('securepass_passwords') || '[]');
-      const userPasswords = storedPasswords.filter((p: Password) => p.userId === user.id);
-      setPasswords(userPasswords);
+      fetchPasswords();
     }
   }, [user]);
 
-  const addPassword = (passwordData: Omit<Password, 'id' | 'userId'>) => {
-    const newPassword: Password = {
-      ...passwordData,
-      id: Date.now().toString(),
-      userId: user!.id
-    };
+  const fetchPasswords = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('passwords')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
 
-    const allPasswords = JSON.parse(localStorage.getItem('securepass_passwords') || '[]');
-    allPasswords.push(newPassword);
-    localStorage.setItem('securepass_passwords', JSON.stringify(allPasswords));
-
-    setPasswords(prev => [...prev, newPassword]);
-    setShowAddModal(false);
+    if (!error && data) {
+      setPasswords(data);
+    }
+    setLoading(false);
   };
+
+  const addPassword = async (passwordData: Omit<Password, 'id' | 'user_id'>) => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('passwords')
+      .insert([
+        {
+          ...passwordData,
+          user_id: user.id
+        }
+      ])
+      .select()
+      .single();
+
+    if (!error && data) {
+      setPasswords(prev => [data, ...prev]);
+      setShowAddModal(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl mb-4 animate-pulse">
+            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <p className="text-white">Loading SecurePass...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900">
@@ -59,7 +95,7 @@ export const Dashboard = () => {
             </div>
             <div>
               <h1 className="text-xl font-bold text-white">SecurePass</h1>
-              <p className="text-sm text-blue-200">Welcome, {user?.username}</p>
+              <p className="text-sm text-blue-200">Welcome, {profile?.username || user?.email}</p>
             </div>
           </div>
 
@@ -88,7 +124,7 @@ export const Dashboard = () => {
                     Profile Settings
                   </button>
                   <button
-                    onClick={logout}
+                    onClick={signOut}
                     className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition-colors"
                   >
                     Sign Out
@@ -122,7 +158,19 @@ export const Dashboard = () => {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {passwords.map((password) => (
-              <PasswordCard key={password.id} password={password} />
+              <PasswordCard 
+                key={password.id} 
+                password={{
+                  id: password.id,
+                  websiteName: password.website_name,
+                  websiteLink: password.website_url,
+                  username: password.username,
+                  email: password.email,
+                  password: password.encrypted_password,
+                  purpose: password.purpose,
+                  userId: password.user_id
+                }}
+              />
             ))}
           </div>
         )}
@@ -132,7 +180,14 @@ export const Dashboard = () => {
       {showAddModal && (
         <AddPasswordModal
           onClose={() => setShowAddModal(false)}
-          onSave={addPassword}
+          onSave={(passwordData) => addPassword({
+            website_name: passwordData.websiteName,
+            website_url: passwordData.websiteLink,
+            username: passwordData.username,
+            email: passwordData.email,
+            encrypted_password: passwordData.password,
+            purpose: passwordData.purpose
+          })}
         />
       )}
 

@@ -8,13 +8,12 @@ interface ProfileModalProps {
 }
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({ onClose }) => {
-  const { user, updateProfile, changePassword } = useAuth();
+  const { user, profile, updateProfile, changePassword } = useAuth();
   const [activeTab, setActiveTab] = useState<'profile' | 'password'>('profile');
   
   // Profile form state
   const [profileForm, setProfileForm] = useState({
-    email: user?.email || '',
-    phoneNumber: user?.phoneNumber || ''
+    phone_number: profile?.phone_number || ''
   });
   const [profileError, setProfileError] = useState('');
   const [profileSuccess, setProfileSuccess] = useState('');
@@ -22,7 +21,6 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ onClose }) => {
 
   // Password form state
   const [passwordForm, setPasswordForm] = useState({
-    currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
@@ -41,23 +39,18 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ onClose }) => {
     setProfileError('');
     setProfileSuccess('');
 
-    if (profileForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profileForm.email)) {
-      setProfileError('Please enter a valid email address');
-      return;
-    }
-
-    if (profileForm.phoneNumber && !validatePhoneNumber(profileForm.phoneNumber)) {
+    if (profileForm.phone_number && !validatePhoneNumber(profileForm.phone_number)) {
       setProfileError('Please enter a valid 10-digit phone number');
       return;
     }
 
     setProfileLoading(true);
-    const success = await updateProfile(profileForm.email, profileForm.phoneNumber);
+    const { error } = await updateProfile(profileForm.phone_number);
     
-    if (success) {
-      setProfileSuccess('Profile updated successfully!');
+    if (error) {
+      setProfileError(error.message || 'Failed to update profile');
     } else {
-      setProfileError('Failed to update profile. Please try again.');
+      setProfileSuccess('Profile updated successfully!');
     }
     
     setProfileLoading(false);
@@ -68,7 +61,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ onClose }) => {
     setPasswordError('');
     setPasswordSuccess('');
 
-    if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+    if (!passwordForm.newPassword || !passwordForm.confirmPassword) {
       setPasswordError('All password fields are required');
       return;
     }
@@ -84,13 +77,13 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ onClose }) => {
     }
 
     setPasswordLoading(true);
-    const success = await changePassword(passwordForm.currentPassword, passwordForm.newPassword);
+    const { error } = await changePassword(passwordForm.newPassword);
     
-    if (success) {
-      setPasswordSuccess('Password changed successfully!');
-      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    if (error) {
+      setPasswordError(error.message || 'Failed to change password');
     } else {
-      setPasswordError('Current password is incorrect');
+      setPasswordSuccess('Password changed successfully!');
+      setPasswordForm({ newPassword: '', confirmPassword: '' });
     }
     
     setPasswordLoading(false);
@@ -142,7 +135,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ onClose }) => {
               </label>
               <input
                 type="text"
-                value={user?.username || ''}
+                value={profile?.username || ''}
                 disabled
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
               />
@@ -155,11 +148,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ onClose }) => {
               </label>
               <input
                 type="email"
-                value={profileForm.email}
-                onChange={(e) => setProfileForm(prev => ({ ...prev, email: e.target.value }))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="your.email@example.com"
+                value={user?.email || ''}
+                disabled
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
               />
+              <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
             </div>
 
             <div>
@@ -168,8 +161,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ onClose }) => {
               </label>
               <input
                 type="tel"
-                value={profileForm.phoneNumber}
-                onChange={(e) => setProfileForm(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                value={profileForm.phone_number}
+                onChange={(e) => setProfileForm(prev => ({ ...prev, phone_number: e.target.value }))}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 placeholder="10-digit phone number"
                 maxLength={10}
@@ -202,19 +195,6 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ onClose }) => {
         {/* Password Tab */}
         {activeTab === 'password' && (
           <form onSubmit={handlePasswordSubmit} className="p-6 space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Current Password
-              </label>
-              <input
-                type="password"
-                value={passwordForm.currentPassword}
-                onChange={(e) => setPasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="Enter current password"
-              />
-            </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 New Password
