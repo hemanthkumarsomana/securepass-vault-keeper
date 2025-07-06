@@ -4,14 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
-import { Eye, EyeOff, ExternalLink } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 
 export const Signup = () => {
   const [formData, setFormData] = useState({
     email: '',
     username: '',
-    password: '',
-    websiteLink: ''
+    password: ''
   });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -27,8 +26,7 @@ export const Signup = () => {
       password: formData.password,
       options: {
         data: {
-          username: formData.username,
-          website_link: formData.websiteLink
+          username: formData.username
         }
       }
     });
@@ -38,15 +36,6 @@ export const Signup = () => {
     }
 
     setLoading(false);
-  };
-
-  const openWebsiteLink = () => {
-    if (formData.websiteLink) {
-      const url = formData.websiteLink.startsWith('http') 
-        ? formData.websiteLink 
-        : `https://${formData.websiteLink}`;
-      window.open(url, '_blank', 'noopener,noreferrer');
-    }
   };
 
   return (
@@ -102,29 +91,6 @@ export const Signup = () => {
           >
             {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
-        </div>
-      </div>
-
-      <div>
-        <Label htmlFor="websiteLink" className="text-white">Website Link (Optional)</Label>
-        <div className="relative">
-          <Input
-            id="websiteLink"
-            type="url"
-            value={formData.websiteLink}
-            onChange={(e) => setFormData(prev => ({ ...prev, websiteLink: e.target.value }))}
-            className="bg-white/10 border-white/20 text-white placeholder-white/60 focus:bg-white/20 pr-12"
-            placeholder="https://yourwebsite.com"
-          />
-          {formData.websiteLink && (
-            <button
-              type="button"
-              onClick={openWebsiteLink}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white transition-colors"
-            >
-              <ExternalLink size={16} />
-            </button>
-          )}
         </div>
       </div>
 
