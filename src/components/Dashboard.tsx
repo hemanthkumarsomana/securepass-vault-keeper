@@ -7,7 +7,7 @@ import { ProfileModal } from '@/components/ProfileModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
-import { Search, Plus, User, LogOut } from 'lucide-react';
+import { Search, Plus, User, LogOut, Menu } from 'lucide-react';
 
 interface Password {
   id: string;
@@ -29,6 +29,7 @@ export const Dashboard = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   const fetchPasswords = async () => {
     if (!user) return;
@@ -94,22 +95,23 @@ export const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-4 md:py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center space-x-4">
-            <div className="inline-flex items-center justify-center w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="flex items-center justify-between mb-6 md:mb-8">
+          <div className="flex items-center space-x-3 md:space-x-4">
+            <div className="inline-flex items-center justify-center w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm rounded-lg md:rounded-xl">
+              <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">SecurePass</h1>
-              <p className="text-blue-200">Welcome back, {profile?.username || user?.email}</p>
+              <h1 className="text-xl md:text-2xl font-bold text-white">SecurePass</h1>
+              <p className="text-blue-200 text-sm md:text-base hidden sm:block">Welcome back, {profile?.username || user?.email}</p>
             </div>
           </div>
           
-          <div className="flex items-center space-x-2">
+          {/* Desktop Menu */}
+          <div className="hidden md:flex items-center space-x-2">
             <Button
               onClick={() => setIsProfileModalOpen(true)}
               variant="ghost"
@@ -129,10 +131,56 @@ export const Dashboard = () => {
               Sign Out
             </Button>
           </div>
+
+          {/* Mobile Menu Button */}
+          <div className="md:hidden">
+            <Button
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+              variant="ghost"
+              size="sm"
+              className="text-white hover:bg-white/10"
+            >
+              <Menu className="w-5 h-5" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        {showMobileMenu && (
+          <div className="md:hidden mb-4 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 p-4">
+            <div className="flex flex-col space-y-2">
+              <Button
+                onClick={() => {
+                  setIsProfileModalOpen(true);
+                  setShowMobileMenu(false);
+                }}
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-white/10 justify-start"
+              >
+                <User className="w-4 h-4 mr-2" />
+                Profile
+              </Button>
+              <Button
+                onClick={signOut}
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-white/10 justify-start"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Welcome message for mobile */}
+        <div className="sm:hidden mb-4">
+          <p className="text-blue-200 text-sm">Welcome back, {profile?.username || user?.email}</p>
         </div>
 
         {/* Search and Add */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-6 md:mb-8">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
@@ -140,12 +188,12 @@ export const Dashboard = () => {
               placeholder="Search passwords..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-white/10 border-white/20 text-white placeholder-white/60 focus:bg-white/20"
+              className="pl-10 bg-white/10 border-white/20 text-white placeholder-white/60 focus:bg-white/20 h-10 md:h-11"
             />
           </div>
           <Button
             onClick={() => setIsAddModalOpen(true)}
-            className="bg-white text-blue-900 hover:bg-blue-50"
+            className="bg-white text-blue-900 hover:bg-blue-50 h-10 md:h-11 px-4 md:px-6 whitespace-nowrap"
           >
             <Plus className="w-4 h-4 mr-2" />
             Add Password
@@ -156,17 +204,17 @@ export const Dashboard = () => {
         {loading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-            <p className="text-white mt-4">Loading your passwords...</p>
+            <p className="text-white mt-4 text-sm md:text-base">Loading your passwords...</p>
           </div>
         ) : filteredPasswords.length === 0 ? (
           <div className="text-center py-12">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl mb-4">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="inline-flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-white/10 backdrop-blur-sm rounded-xl md:rounded-2xl mb-4">
+              <svg className="w-6 h-6 md:w-8 md:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold text-white mb-2">No passwords found</h3>
-            <p className="text-blue-200 mb-6">
+            <h3 className="text-lg md:text-xl font-semibold text-white mb-2">No passwords found</h3>
+            <p className="text-blue-200 mb-6 text-sm md:text-base px-4">
               {searchTerm ? 'Try adjusting your search terms' : 'Start by adding your first password'}
             </p>
             {!searchTerm && (
@@ -180,7 +228,7 @@ export const Dashboard = () => {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {filteredPasswords.map((password) => (
               <PasswordCard
                 key={password.id}
