@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -82,54 +81,58 @@ export const AddPasswordModal = ({ isOpen, onClose, onPasswordAdded }: AddPasswo
           <form onSubmit={handleSubmit} className="space-y-4 mt-4">
             <div>
               <Label htmlFor="website_name">Website Name *</Label>
-              <Input
+              <input
                 id="website_name"
                 value={formData.website_name}
                 onChange={(e) => setFormData(prev => ({ ...prev, website_name: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
             </div>
             
             <div>
               <Label htmlFor="website_url">Website URL</Label>
-              <Input
+              <input
                 id="website_url"
                 type="url"
                 value={formData.website_url}
                 onChange={(e) => setFormData(prev => ({ ...prev, website_url: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="https://example.com"
               />
             </div>
             
             <div>
               <Label htmlFor="username">Username *</Label>
-              <Input
+              <input
                 id="username"
                 value={formData.username}
                 onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
             </div>
             
             <div>
               <Label htmlFor="email">Email</Label>
-              <Input
+              <input
                 id="email"
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             
             <div>
               <Label htmlFor="encrypted_password">Password *</Label>
               <div className="relative">
-                <Input
+                <input
                   id="encrypted_password"
                   type={showPassword ? 'text' : 'password'}
                   value={formData.encrypted_password}
                   onChange={(e) => setFormData(prev => ({ ...prev, encrypted_password: e.target.value }))}
-                  className="pr-12"
+                  className="w-full px-3 py-2 pr-12 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />
                 <button

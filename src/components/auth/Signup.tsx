@@ -41,66 +41,69 @@ export const Signup = () => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div className="text-red-400 text-sm bg-red-900/20 p-3 rounded-lg border border-red-800">
-          {error}
+        <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
+          <p className="text-red-200 text-sm">{error}</p>
         </div>
       )}
       
       <div>
-        <Label htmlFor="email" className="text-white">Email</Label>
-        <Input
-          id="email"
+        <label className="block text-sm font-medium text-white mb-2">
+          Email
+        </label>
+        <input
           type="email"
           value={formData.email}
           onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-          className="bg-white/10 border-white/20 text-white placeholder-white/60 focus:bg-white/20"
+          className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all"
           placeholder="Enter your email"
           required
         />
       </div>
 
       <div>
-        <Label htmlFor="username" className="text-white">Username</Label>
-        <Input
-          id="username"
+        <label className="block text-sm font-medium text-white mb-2">
+          Username
+        </label>
+        <input
           type="text"
           value={formData.username}
           onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
-          className="bg-white/10 border-white/20 text-white placeholder-white/60 focus:bg-white/20"
+          className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all"
           placeholder="Choose a username"
           required
         />
       </div>
 
       <div>
-        <Label htmlFor="password" className="text-white">Password</Label>
+        <label className="block text-sm font-medium text-white mb-2">
+          Password
+        </label>
         <div className="relative">
-          <Input
-            id="password"
+          <input
             type={showPassword ? 'text' : 'password'}
             value={formData.password}
             onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-            className="bg-white/10 border-white/20 text-white placeholder-white/60 focus:bg-white/20 pr-12"
+            className="w-full px-4 py-3 pr-12 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all"
             placeholder="Create a password"
             required
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white transition-colors"
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/70 hover:text-white transition-colors"
           >
-            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           </button>
         </div>
       </div>
 
-      <Button
+      <button
         type="submit"
         disabled={loading}
-        className="w-full bg-white text-blue-900 hover:bg-blue-50 font-medium"
+        className="w-full bg-white text-blue-900 py-3 px-4 rounded-lg font-medium hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? 'Creating Account...' : 'Sign Up'}
-      </Button>
+      </button>
     </form>
   );
 };
