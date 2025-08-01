@@ -6,7 +6,7 @@ import { AddPasswordModal } from '@/components/AddPasswordModal';
 import { ProfileModal } from '@/components/ProfileModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/backend/integrations/supabase/client';
 import { Search, Plus, User, LogOut, Menu } from 'lucide-react';
 
 interface Password {

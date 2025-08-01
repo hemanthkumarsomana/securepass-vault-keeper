@@ -1,73 +1,76 @@
-# Welcome to your Lovable project
+# SecurePass - Password Manager
 
-## Project info
+A secure, modern password manager built with React, TypeScript, and Supabase.
 
-**URL**: https://lovable.dev/projects/49a9916c-ea92-47b3-bf0a-e20335e4069a
+## Project Structure
 
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/49a9916c-ea92-47b3-bf0a-e20335e4069a) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+├── frontend/                 # Frontend application
+│   ├── public/              # Static assets
+│   │   └── robots.txt       # SEO configuration
+│   └── src/                 # React application source
+│       ├── styles/          # CSS styling
+│       │   ├── index.css    # Global styles and design tokens
+│       │   └── App.css      # Application-specific styles
+│       ├── components/      # React components
+│       │   ├── ui/          # Reusable UI components
+│       │   └── auth/        # Authentication components
+│       ├── pages/           # Page components
+│       ├── contexts/        # React context providers
+│       ├── hooks/           # Custom React hooks
+│       ├── lib/             # Utility functions
+│       ├── App.tsx          # Main application component
+│       ├── main.tsx         # Application entry point
+│       └── vite-env.d.ts    # TypeScript environment definitions
+├── backend/                 # Backend services
+│   ├── integrations/        # External service integrations
+│   │   └── supabase/        # Supabase client and types
+│   └── supabase/            # Supabase configuration
+├── index.html               # Main HTML file
+├── vite.config.ts           # Vite build configuration
+├── tailwind.config.ts       # Tailwind CSS configuration
+├── eslint.config.js         # ESLint configuration
+└── README.md                # This file
 ```
 
-**Edit a file directly in GitHub**
+## Features
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- **Secure Authentication**: Email-based signup/login with password recovery
+- **Password Management**: Store, view, edit, and delete passwords securely
+- **Responsive Design**: Optimized for desktop and mobile devices
+- **Search & Filter**: Find passwords quickly with real-time search
+- **Profile Management**: Update personal information and change passwords
+- **Modern UI**: Clean, glassmorphism design with smooth animations
 
-**Use GitHub Codespaces**
+## Tech Stack
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- **Frontend**: React 18, TypeScript, Tailwind CSS
+- **Backend**: Supabase (PostgreSQL, Authentication, RLS)
+- **Build Tool**: Vite
+- **UI Components**: Shadcn/ui
+- **Icons**: Lucide React
+- **State Management**: React Context + Hooks
 
-## What technologies are used for this project?
+## Getting Started
 
-This project is built with:
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Configure Supabase credentials
+4. Run development server: `npm run dev`
+5. Open http://localhost:8080
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Security Features
 
-## How can I deploy this project?
+- Row Level Security (RLS) policies
+- Encrypted password storage
+- Secure session management
+- HTTPS enforced
+- Input validation and sanitization
 
-Simply open [Lovable](https://lovable.dev/projects/49a9916c-ea92-47b3-bf0a-e20335e4069a) and click on Share -> Publish.
+## Contributing
 
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+1. Follow the established project structure
+2. Use TypeScript for type safety
+3. Follow the design system defined in `frontend/src/styles/`
+4. Write clean, maintainable code
+5. Test thoroughly before submitting
